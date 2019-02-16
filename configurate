@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# This little shell Script is to help combining different yaml-
+# Files into one big one while at the same time grouping sub-ke
+# ys from identically named sections into one
+#
+# -------------------------------------------------------------
+#
+# Written by: Light
+# Last updated on: 16 Feb 2019
+#
+# -------------------------------------------------------------
+
+DIR=configuration
+FILE=configuration.yaml
+
+# Read the content of all yaml-files from given Directory into
+# a Variable and strip all Comments and empty Lines
+CONTENT=$(find ${DIR}/ -type f -name "*.yaml" -exec cat {} \; | sed '/^[[:blank:]]*$/d;/^[[:blank:]]*#.*$/d')
+
+# Make an Array containing all Main-keys
+KEYS=($(echo "${CONTENT}" | grep "^[[:alpha:]][^\!]*$" | sort | uniq))
+
+# Empty the target-file
+> ${FILE}
+
+# Iterate through the Array
+for K in "${KEYS[@]}"
+do
+        # Echo a Main-Key to the config-file
+        echo ${K} >> ${FILE}
+        # Also echo all sub-keys that correspond to given Key
+        echo "${CONTENT}" | sed -n "/${K}/,/^[[:alpha:]]/{/^[[:alpha:]]/b;p}" >> ${FILE}
+done
+exit 0
